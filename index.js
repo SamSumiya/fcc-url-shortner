@@ -19,6 +19,33 @@ app.get('/api/hello', function(req, res) {
   res.json({ greeting: 'hello API' });
 });
 
+//
+
+const urls = [
+  {
+    original_url : 'https://freeCodeCamp.org', short_url : 1
+  }
+]
+
+const findUrl = (input) => {
+  const index = parseInt( input, 10 )
+  for ( const url of urls ) {
+    if (url.short_url === index ) {
+      return { url: url.original_url}
+    }
+  }
+  return { error: 'invalid url'}
+}
+
+app.get('/api/shorturl/:short_url', function(req, res) {
+  const shortUrl = req.params.short_url;
+  const foundUrl = findUrl(shortUrl)
+  if ( foundUrl.url )  {
+    res.json(foundUrl)
+  } 
+  res.json(foundUrl)
+});
+
 app.listen(port, function() {
   console.log(`Listening on port ${port}`);
 });

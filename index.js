@@ -31,7 +31,7 @@ const findUrl = (input) => {
   const index = parseInt( input, 10 )
   for ( const url of urls ) {
     if (url.short_url === index ) {
-      return { url: url.original_url}
+      return { url: url.original_url, short_url: url.short_url}
     }
   }
   return { error: 'invalid url'}

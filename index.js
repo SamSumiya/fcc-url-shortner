@@ -41,13 +41,26 @@ const dupeUrl = (input) => {
   }
 }
 
+const getURl = ( id ) =>  {
+  const validId = parseInt( id, 10)
+  for ( let s of store ) {
+    if (s.short_url === validId ) {
+      return s.original_url
+    }
+  }
+  throw new Error('URL not found')
+}
+
 app.get('/api/shorturl/:short_url', function(req, res) {
-  const shortUrl = req.params.short_url;
-  const foundUrl = hasUrl(shortUrl)
-  if ( foundUrl )  {
-    res.json(foundUrl)
-  } 
-  res.json(foundUrl)
+  try {
+    const shortUrl = req.params.short_url;
+    const url = getURl(shortUrl)
+ 
+    res.redirect(url)
+  } catch (err ) {
+    res.json( {error: 'invalid url'})
+  }
+  
 });
 
 
@@ -59,14 +72,14 @@ app.post('/api/shorturl', function(req, res) {
 
     const url = parsedUrl.hostname
     if (!hasUrl(url)) {
-      store.push({original_url: url, short_url})
+      store.push({original_url: userUrl, short_url})
       res.json({
-        original_url: parsedUrl, 
+        original_url: userUrl, 
         short_url
         })
       } else {
         res.json(
-          dupeUrl(url)
+          dupeUrl(userUrl)
         )
       }
     } catch(err) {

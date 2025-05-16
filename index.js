@@ -23,78 +23,69 @@ app.get('/api/hello', function(req, res) {
   res.json({ greeting: 'hello API' });
 });
 
-let id = 1
-let store = []
+// 1: add new entries to [] 
+// 2: increment index as adding new entries
 
-const hasUrl = (input) => {
-  for ( let s of store ) {
-    if (s.original_url === input) {
-      return true
+const urlManager = (() => {
+  let index = 1
+  let urlStore = [] 
+
+  const hasUrl = (url) => {
+    return urlStore.find( existingURl =>{
+      return existingURl.original_url === url
+    } )
+  }
+
+  const addUrl = (url) => {
+    const existingURl = hasUrl(url)
+    if (existingURl) return existingURl 
+
+    else {
+      const newEntry = { original_url: url, short_url: index++ }
+      urlStore.push(newEntry)
+      return newEntry 
     }
   }
-  return false 
-}
 
-const dupeUrl = (input) => {
-  for ( let s of store ) {
-    if (s.original_url === input ) {
-      return s
-    }
+  const shortUrlLookUp = (index) => {
+    const pi = parseInt(index, 10)
+    return urlStore.find( storedUrl => storedUrl.short_url === pi )
   }
-}
 
-const getURl = ( id ) =>  {
-  const validId = parseInt( id, 10)
-  for ( let s of store ) {
-    if (s.short_url === validId ) {
-      return s.original_url
-    }
-  }
-  throw new Error('URL not found')
-}
+  return { hasUrl, addUrl, shortUrlLookUp }
+})()
 
-app.get('/api/shorturl/:short_url', function(req, res) {
+
+app.get('/api/shorturl/:short_url', (req, res) => {
   try {
-    const shortUrl = req.params.short_url;
-    const url = getURl(shortUrl)
- 
-    res.redirect(url)
-  } catch (err ) {
-    res.json( {error: 'invalid url'})
-  }
-  
-});
-
-
-app.post('/api/shorturl', function(req, res) {
-  const userUrl = req.body.url;
-  const short_url = id++;
- 
-  try {
-    const parsedUrl = new URL( userUrl )  
-
-    if (!/^https?:$/.test(parsedUrl.protocol)) {
-      return res.json({ error: 'invalid url' });
+    const idx = req.params.short_url
+    const url =  urlManager.shortUrlLookUp(idx)
+    res.redirect(url.original_url)
+  } catch(err) {
+    if ( err ) {
+       return res.json({error: "invalid url"})
     }
-  
-    dns.lookup(parsedUrl.hostname, (err) => {
-      if (err) {
-        return res.json({ error: 'invalid url' });
-      }
-     
-      if (!hasUrl(userUrl)) {
-        store.push({ original_url: userUrl, short_url })
-        res.json({ original_url: userUrl, short_url })
-      } else {
-        res.json( dupeUrl(userUrl))
-      }   
-    }) 
-  } catch( err ) {
-     res.json({ error: 'invalid url' });
   }
 })
 
+app.post('/api/shorturl', (req, res) => {
+  try {
+    const inputUrl = req.body.url
+    const parsedUrl = new URL(inputUrl)
 
+    dns.lookup(parsedUrl.hostname, (err) => {
+      if ( err ) {
+        return res.json({error: "invalid url"})
+      }
+      const response = urlManager.addUrl(parsedUrl.origin)
+      res.json(response)
+    })
+  } catch(err) {
+    if ( err ) {
+       return res.json({error: "invalid url"})
+    }
+  }
+})
 
 app.listen(port, function() {
   console.log(`Listening on port ${port}`);

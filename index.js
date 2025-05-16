@@ -72,22 +72,21 @@ app.post('/api/shorturl', function(req, res) {
  
   try {
     const parsedUrl = new URL( userUrl )  
-     console.log(parsedUrl)
+
     if (!/^https?:$/.test(parsedUrl.protocol)) {
       return res.json({ error: 'invalid url' });
     }
   
     dns.lookup(parsedUrl.hostname, (err) => {
       if (err) {
-         console.log("❌ Invalid protocol:", parsedUrl.protocol);
         return res.json({ error: 'invalid url' });
       }
      
-      if (!hasUrl(userUrl)) {
-        store.push({ original_url: userUrl, short_url })
-        res.json({ original_url: userUrl, short_url })
+      if (!hasUrl(parsedUrl.origin)) {
+        store.push({ original_url: parsedUrl.origin, short_url })
+        res.json({ original_url: parsedUrl.origin, short_url })
       } else {
-        res.json( dupeUrl(userUrl))
+        res.json( dupeUrl(parsedUrl.origin))
       }   
     }) 
   } catch( err ) {
@@ -100,3 +99,4 @@ app.post('/api/shorturl', function(req, res) {
 app.listen(port, function() {
   console.log(`Listening on port ${port}`);
 });
+

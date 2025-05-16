@@ -82,11 +82,11 @@ app.post('/api/shorturl', function(req, res) {
         return res.json({ error: 'invalid url' });
       }
      
-      if (!hasUrl(parsedUrl.origin)) {
-        store.push({ original_url: parsedUrl.origin, short_url })
-        res.json({ original_url: parsedUrl.origin, short_url })
+      if (!hasUrl(userUrl)) {
+        store.push({ original_url: userUrl, short_url })
+        res.json({ original_url: userUrl, short_url })
       } else {
-        res.json( dupeUrl(parsedUrl.origin))
+        res.json( dupeUrl(userUrl))
       }   
     }) 
   } catch( err ) {

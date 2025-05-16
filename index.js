@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const { urlencoded } = require('body-parser');
 const app = express();
+const dns = require('dns');
+
 
 // Basic Configuration
 const port = process.env.PORT || 3000;
@@ -67,26 +69,30 @@ app.get('/api/shorturl/:short_url', function(req, res) {
 app.post('/api/shorturl', function(req, res) {
   const userUrl = req.body.url;
   const short_url = id++;
+ 
   try {
-    const parsedUrl = new URL( userUrl )
-
-    const url = parsedUrl.hostname
-    if (!hasUrl(url)) {
-      store.push({original_url: userUrl, short_url})
-      res.json({
-        original_url: userUrl, 
-        short_url
-        })
-      } else {
-        res.json(
-          dupeUrl(userUrl)
-        )
+    const parsedUrl = new URL( userUrl )  
+     console.log(parsedUrl)
+    if (!/^https?:$/.test(parsedUrl.protocol)) {
+      return res.json({ error: 'invalid url' });
+    }
+  
+    dns.lookup(parsedUrl.hostname, (err) => {
+      if (err) {
+         console.log("❌ Invalid protocol:", parsedUrl.protocol);
+        return res.json({ error: 'invalid url' });
       }
-    } catch(err) {
-    console.error(`Error: ${err}`)
-    res.json({ error: 'invalid url' })
+     
+      if (!hasUrl(userUrl)) {
+        store.push({ original_url: userUrl, short_url })
+        res.json({ original_url: userUrl, short_url })
+      } else {
+        res.json( dupeUrl(userUrl))
+      }   
+    }) 
+  } catch( err ) {
+     res.json({ error: 'invalid url' });
   }
-  console.log(store)
 })
 
 

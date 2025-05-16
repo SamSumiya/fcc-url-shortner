@@ -78,7 +78,7 @@ app.post('/api/shorturl', (req, res) => {
         return res.json({error: "invalid url"})
       }
       const response = urlManager.addUrl(parsedUrl.origin)
-      res.json(response)
+      return res.json(response)
     })
   } catch(err) {
     if ( err ) {

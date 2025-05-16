@@ -60,6 +60,9 @@ app.get('/api/shorturl/:short_url', (req, res) => {
   try {
     const idx = req.params.short_url
     const url =  urlManager.shortUrlLookUp(idx)
+    if (!url) {
+      return res.json({ error: "No short URL found for given input" });
+    }
     res.redirect(url.original_url)
   } catch(err) {
     if ( err ) {
@@ -77,7 +80,7 @@ app.post('/api/shorturl', (req, res) => {
       if ( err ) {
         return res.json({error: "invalid url"})
       }
-      const response = urlManager.addUrl(parsedUrl.origin)
+      const response = urlManager.addUrl(inputUrl)
       return res.json(response)
     })
   } catch(err) {
